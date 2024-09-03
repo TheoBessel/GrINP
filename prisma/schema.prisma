@@ -1,0 +1,59 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String    @id @unique
+  churros_uid     String?   @unique
+  
+  first_name      String
+  last_name       String
+  email           String    @unique
+  password        String?
+  root            Boolean   @default(false)
+
+  owned_slots     Slot[]    @relation("Slot owner")
+  slots           Slot[]    @relation("Slot participants")
+
+  auth_session    Session[]
+  key             Key[]
+}
+
+model Session {
+  id              String    @id @unique
+  owner_id        String
+  expires_at      DateTime
+  owner           User      @relation(references: [id], fields: [owner_id], onDelete: Cascade)
+
+  @@index([owner_id])
+}
+
+model Key {
+  id              String    @id @unique
+  hashed_password String?
+  owner_id        String
+  owner           User      @relation(references: [id], fields: [owner_id], onDelete: Cascade)
+
+  @@index([owner_id])
+}
+
+model Slot {
+  id              String    @id @default(cuid())
+  name            String?
+  description     String?
+  
+  starts_at       DateTime
+  ends_at         DateTime
+
+  owner_id        String
+  owner           User      @relation("Slot owner", fields: [owner_id], references: [id])
+  participants    User[]    @relation("Slot participants")
+}
