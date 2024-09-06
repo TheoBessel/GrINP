@@ -14,7 +14,7 @@
     export let data: PageData;
 
     const form = superForm(data.form, {
-        validators: zodClient(loginScheme),
+        validators: zodClient(loginScheme)
     });
 
     const { form: formData, enhance } = form;
@@ -58,19 +58,17 @@
                 <span class="h-full border-l"/>
             </div>
             <div class="relative flex flex-col m-auto text-xs uppercase">
-                <span class="bg-background py-2 text-muted-foreground"> Ou </span>
+                <span class="bg-card py-2 text-muted-foreground"> Ou </span>
             </div>
         </div>
 
-        <form method="POST" action="?/oauth" class="w-full flex flex-col m-auto">
-            <Avatar class="m-auto">
-                <AvatarImage src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTmPRK3nIU545-R6tiB9ouXL1yCFCY7-q8iTw&s" alt="Churros" />
+        <form method="POST" action="?/oauth" class="w-full flex flex-col justify-between">
+            <Avatar class="m-auto border-2">
+                <AvatarImage src="https://git.inpt.fr/inp-net/visual-identity/-/raw/main/favicon-color.png?ref_type=heads" alt="inp-net" />
                 <AvatarFallback>CR</AvatarFallback>
             </Avatar>
-
-            <div class="h-4"></div>
             
-            <Form.Button>Connexion via Churros</Form.Button>
+            <Form.Button>Connexion via INP Net</Form.Button>
         </form>
     </CardContent>
 </Card>

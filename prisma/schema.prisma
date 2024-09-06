@@ -11,7 +11,7 @@ datasource db {
 }
 
 model User {
-  id              String    @id @unique
+  id              String    @id @unique @default(cuid())
   churros_uid     String?   @unique
   
   first_name      String
@@ -23,30 +23,21 @@ model User {
   owned_slots     Slot[]    @relation("Slot owner")
   slots           Slot[]    @relation("Slot participants")
 
-  auth_session    Session[]
-  key             Key[]
+  sessions    Session[]
 }
 
 model Session {
-  id              String    @id @unique
-  owner_id        String
-  expires_at      DateTime
-  owner           User      @relation(references: [id], fields: [owner_id], onDelete: Cascade)
+  id              String    @id @unique @default(cuid())
+  userId          String
+  expiresAt       DateTime
+  
+  user            User      @relation(references: [id], fields: [userId], onDelete: Cascade)
 
-  @@index([owner_id])
-}
-
-model Key {
-  id              String    @id @unique
-  hashed_password String?
-  owner_id        String
-  owner           User      @relation(references: [id], fields: [owner_id], onDelete: Cascade)
-
-  @@index([owner_id])
+  @@index([id])
 }
 
 model Slot {
-  id              String    @id @default(cuid())
+  id              String    @id @unique @default(cuid())
   name            String?
   description     String?
   

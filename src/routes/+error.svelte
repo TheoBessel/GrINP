@@ -6,14 +6,9 @@
 	import Card from "@/components/ui/card/card.svelte";
 </script>
 
-<div class="flex h-screen">
-    <Card class="m-auto">
-        <CardHeader>
-            <CardTitle>Error {$page.status}</CardTitle>
-            <CardDescription>{$page.error?.message}</CardDescription>
-        </CardHeader>
-        <!--<CardContent>
-            <Button>Click me !</Button>
-        </CardContent>-->
-    </Card>
-</div>
+<Card class="m-auto">
+    <CardHeader>
+        <CardTitle>Error {$page.status}</CardTitle>
+        <CardDescription>{$page.error?.message}</CardDescription>
+    </CardHeader>
+</Card>

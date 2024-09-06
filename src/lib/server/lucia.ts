@@ -15,8 +15,16 @@ export const lucia = new Lucia(adapter, {
     },
     getUserAttributes: (attributes) => {
         return {
-            churros_uid: attributes.churros_uid
+            churros_id: attributes.churros_id,
+            email: attributes.email,
+            root: attributes.root
         };
+    },
+    getSessionAttributes: (attributes) => {
+        return {
+            userId: attributes.userId,
+            expiresAt: attributes.expiresAt
+        }
     }
 });
 
@@ -24,9 +32,17 @@ declare module "lucia" {
     interface Register {
         Lucia: typeof Lucia;
         DatabaseUserAttributes: DatabaseUserAttributes;
+        DatabaseSessionAttributes: DatabaseSessionAttributes;
     }
 }
 
 interface DatabaseUserAttributes {
-    churros_uid: string;
+    email: string;
+    churros_id: string;
+    root: boolean;
+}
+
+interface DatabaseSessionAttributes {
+    userId: string;
+    expiresAt: Date;
 }

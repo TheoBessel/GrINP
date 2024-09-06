@@ -1,5 +1,7 @@
 import { goto } from "$app/navigation";
 import prisma from "$lib/server/prisma";
+import { redirect, type ServerLoadEvent } from "@sveltejs/kit";
+import type { PageServerLoad } from "./$types";
 
 let slot = {
     id: 0,
@@ -13,11 +15,14 @@ let owner = {
     name: ""
 };
 
-export async function load({ url }: { url: URL }) {
-    console.log("Loading data for", url.toString());
+export const load : PageServerLoad = async (event : ServerLoadEvent) => {
+    if (!event.locals.user) {
+        redirect(302, "/login");
+    }
+    
     try {
         // Extrait la date à partir de l'URL ou des paramètres
-        const dateParam = url.searchParams.get('date');
+        const dateParam = event.url.searchParams.get('date');
         
         // Convertit le paramètre en objet Date (assurez-vous que `dateParam` est au bon format)
         const date = dateParam ? new Date(dateParam) : new Date();
@@ -79,7 +84,7 @@ export async function load({ url }: { url: URL }) {
                 participants : [],
             };
         } else {
-            goto(url);
+            goto(event.url);
             return {
                 status: error.status,
                 error: error
