@@ -2,7 +2,7 @@ import prisma from "@/server/prisma";
 import type { RequestHandler } from "./$types";
 
 export const POST: RequestHandler = async (event) => {
-  const { slot_id } = await event.request.json();
+  const { slot_id, participants_count } = await event.request.json();
 
   const user = event.locals.user;
 
@@ -23,19 +23,6 @@ export const POST: RequestHandler = async (event) => {
         },
       });
 
-      await prisma.user.update({
-        where: {
-          id: user_id,
-        },
-        data: {
-          slots: {
-            connect: {
-              id: slot_id,
-            },
-          },
-        },
-      });
-
       const participants = await prisma.user.findMany({
         where: {
           slots: {
@@ -46,9 +33,21 @@ export const POST: RequestHandler = async (event) => {
         },
       });
 
-      return new Response(JSON.stringify(participants), {
-        status: 200,
-      });
+      let participants_count_new = -1;
+
+      if (participants) {
+        participants_count_new = participants.length;
+      }
+
+      return new Response(
+        JSON.stringify({
+          updated: participants_count_new > participants_count,
+          participants_count: participants_count_new,
+        }),
+        {
+          status: 200,
+        },
+      );
     } catch (error) {
       console.log(error);
 

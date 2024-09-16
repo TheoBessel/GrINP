@@ -1,6 +1,11 @@
 <script lang="ts">
     import { loginScheme } from "$lib";
-    import { Card, CardContent, CardHeader, CardTitle } from "$lib/components/ui/card";
+    import {
+        Card,
+        CardContent,
+        CardHeader,
+        CardTitle,
+    } from "$lib/components/ui/card";
     import * as Form from "$lib/components/ui/form";
     import { Input } from "$lib/components/ui/input";
     import AvatarFallback from "@/components/ui/avatar/avatar-fallback.svelte";
@@ -14,30 +19,48 @@
     export let data: PageData;
 
     const form = superForm(data.form, {
-        validators: zodClient(loginScheme)
+        validators: zodClient(loginScheme),
     });
 
     const { form: formData, enhance } = form;
+
+    import { page } from "$app/stores";
+    import { getFlash } from "sveltekit-flash-message";
+    import CardFooter from "@/components/ui/card/card-footer.svelte";
+    import Button from "@/components/ui/button/button.svelte";
+
+    const flash = getFlash(page, {
+        clearOnNavigate: true,
+        clearAfterMs: 10,
+        clearArray: true,
+    });
 </script>
 
 <Card class="m-auto w-1/2">
     <CardHeader>
         <CardTitle>Connexion</CardTitle>
-        <CardDescription>Entrez votre E-Mail ci dessous pour vous connecter</CardDescription>
+        <CardDescription
+            >Entrez votre E-Mail ci dessous pour vous connecter</CardDescription
+        >
     </CardHeader>
 
     <div class="relative">
         <div class="absolute inset-0 flex items-center">
-            <span class="m-4 w-full border-t"/>
+            <span class="m-4 w-full border-t" />
         </div>
     </div>
-    
+
     <CardContent class="flex gap-4 pt-6">
         <form method="POST" action="?/manual" use:enhance class="w-full">
             <Form.Field {form} name="email">
                 <Form.Control let:attrs>
                     <Form.Label>E-Mail</Form.Label>
-                    <Input type="email" {...attrs} bind:value={$formData.email} placeholder="nom@exemple.fr" />
+                    <Input
+                        type="email"
+                        {...attrs}
+                        bind:value={$formData.email}
+                        placeholder="nom@exemple.fr"
+                    />
                 </Form.Control>
                 <Form.FieldErrors />
             </Form.Field>
@@ -45,7 +68,11 @@
             <Form.Field {form} name="password">
                 <Form.Control let:attrs>
                     <Form.Label>Mot de passe</Form.Label>
-                    <Input type="password" {...attrs} bind:value={$formData.password} />
+                    <Input
+                        type="password"
+                        {...attrs}
+                        bind:value={$formData.password}
+                    />
                 </Form.Control>
                 <Form.FieldErrors />
             </Form.Field>
@@ -55,20 +82,39 @@
 
         <div class="relative flex">
             <div class="absolute inset-2 flex flex-col items-center">
-                <span class="h-full border-l"/>
+                <span class="h-full border-l" />
             </div>
             <div class="relative flex flex-col m-auto text-xs uppercase">
                 <span class="bg-card py-2 text-muted-foreground"> Ou </span>
             </div>
         </div>
 
-        <form method="POST" action="?/oauth" class="w-full flex flex-col justify-between">
+        <form
+            method="POST"
+            action="?/oauth"
+            class="w-full flex flex-col justify-between"
+        >
             <Avatar class="m-auto border-2">
-                <AvatarImage src="https://git.inpt.fr/inp-net/visual-identity/-/raw/main/favicon-color.png?ref_type=heads" alt="inp-net" />
+                <AvatarImage
+                    src="https://git.inpt.fr/inp-net/visual-identity/-/raw/main/favicon-color.png?ref_type=heads"
+                    alt="inp-net"
+                />
                 <AvatarFallback>CR</AvatarFallback>
             </Avatar>
-            
-            <Form.Button>Connexion via INP Net</Form.Button>
+
+            <Form.Button class="w-full">Connexion via INP Net</Form.Button>
         </form>
     </CardContent>
+
+    <div class="relative">
+        <div class="absolute inset-0 flex items-center">
+            <span class="w-full border-t" />
+        </div>
+    </div>
+
+    <CardFooter class="p-2 flex justify-evenly gap-4">
+        <CardDescription>Je n'ai pas encore de compte ?</CardDescription>
+
+        <Button href="/register" class="px-4 py-0">S'inscrire</Button>
+    </CardFooter>
 </Card>

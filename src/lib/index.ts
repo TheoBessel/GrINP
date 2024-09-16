@@ -18,4 +18,14 @@ export const registerScheme = z.object({
     path: ["confirmPassword"],
 });
 
+// TODO : add date range check
+export const slotScheme = z.object({
+    title: z.string().min(5),
+    description: z.string().min(5),
+    date: z.object({
+        starts_at: z.string(),//z.date(),
+        ends_at: z.string()//z.date()
+    })
+});
+
 export type FormSchema = typeof loginScheme;

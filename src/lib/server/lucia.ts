@@ -17,7 +17,8 @@ export const lucia = new Lucia(adapter, {
         return {
             churros_id: attributes.churros_id,
             email: attributes.email,
-            root: attributes.root
+            root: attributes.root,
+            instructor: attributes.instructor
         };
     },
     getSessionAttributes: (attributes) => {
@@ -40,6 +41,7 @@ interface DatabaseUserAttributes {
     email: string;
     churros_id: string;
     root: boolean;
+    instructor: boolean;
 }
 
 interface DatabaseSessionAttributes {
