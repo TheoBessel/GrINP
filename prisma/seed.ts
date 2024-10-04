@@ -6,7 +6,7 @@ import * as argon2 from "argon2";
 
 const prisma = new PrismaClient();
 const user_count = 40;
-const slot_count = 100;
+const slot_count = 30;
 
 async function main() {
   // Seed the database with 100 users
@@ -33,10 +33,11 @@ async function main() {
   const users = await prisma.user.findMany();
 
   for (let i = 0; i < slot_count; i++) {
+    const capacity = faker.number.int({ min: 4, max: 32 });
     const owner = faker.helpers.arrayElement(users);
     const participants = faker.helpers.arrayElements(
       users,
-      faker.number.int({ min: 0, max: 18 }),
+      faker.number.int({ min: 0, max: capacity }),
     );
 
     const starts_at = faker.date.between({
@@ -54,6 +55,8 @@ async function main() {
           from: starts_at,
           to: "2024-12-01T00:00:00.000Z",
         }),
+
+        capacity: capacity,
 
         // Assign a random user to the slot as the owner
         owner: {

@@ -26,8 +26,6 @@
     $: root = data.root;
     $: instructor = data.instructor;
 
-    //setInterval(changeBackgroundRandom, 5000);
-
     import { page } from "$app/stores";
     import { toast } from "svelte-sonner";
     import { getFlash } from "sveltekit-flash-message";
@@ -39,7 +37,7 @@
     });
 
     $: if ($flash) {
-        console.log("Flash message recieved !");
+        console.log("Flash message received !");
         if ($flash.type === "success") {
             toast.success($flash.message, {
                 action: {
@@ -56,71 +54,93 @@
             });
         }
     }
+
+    // Variable pour contrôler l'ouverture du menu
+    let menuOpen = false;
+
+    function toggleMenu() {
+        menuOpen = !menuOpen;
+    }
+
+    function closeMenu() {
+        menuOpen = false;
+    }
 </script>
 
-<div class="page flex h-screen flex-col relative">
+<div class="page flex h-full md:h-screen flex-col relative">
     <!-- Image de fond unique -->
-    <div
+    <div class="background absolute inset-0"></div>
+    <!--<div
         class="background absolute inset-0"
         style={`background-image: url(${currentBackground});`}
-    ></div>
+    ></div>-->
 
     <!-- Contenu de la page -->
-    <div class="content relative z-10 flex flex-col h-screen">
-        <header
-            class="sticky top-0 flex h-16 items-center gap-8 border-b bg-background px-4 md:px-6 w-full"
-        >
-            <!--<a href="/" class="text-3xl font-bold">Gr'</a>
-            <img src={inp} alt="inp" style="height: 1.5rem;">-->
-            <nav
-                class="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6"
-            >
-                <Button href="/" class="text-3xl font-bold" variant="tertiary"
-                    >Gr'INP</Button
-                >
-                {#if user}
-                    <!--<Button href="/events" variant="tertiary">Évènements</Button
-                    >-->
-                    <Button href="/calendar" variant="tertiary">Créneaux</Button
-                    >
-                {/if}
+    <div class="content relative z-10 flex flex-col h-full">
+        <!-- Bouton hamburger/croix visible sur mobile -->
+        <Button on:click={toggleMenu} class="md:hidden hamburger-button h-16 flex justify-start" variant="background">
+            <div class={`hamburger ${menuOpen ? 'open' : ''}`}>
+                <span class="line"></span>
+                <span class="line"></span>
+                <span class="line"></span>
+            </div>
+        </Button>
 
-                <div class="absolute right-0 flex">
-                    {#if !user}
+        <!-- Menu principal (header entier) -->
+        <header
+            class={`sticky top-0 flex max-md:flex-col md:h-16 items-center gap-8 border-b bg-background p-4 w-full z-50 justify-between max-md:transition-transform max-md:duration-500 max-md:ease-in-out transform ${
+                menuOpen ? "max-md:translate-y-0" : "max-md:-translate-y-full"
+            }`}
+        >
+            <!-- Liens classiques -->
+            <div class="flex flex-col items-center gap-4 md:flex-row">
+                <Button href="/" class="text-3xl font-bold" variant="tertiary" on:click={closeMenu}>
+                    Gr'INP
+                </Button>
+
+                {#if user}
+                    <Button href="/calendar" variant="tertiary" on:click={closeMenu}>Créneaux</Button>
+                {/if}
+            </div>
+
+            <!-- Liens gestion -->
+            <div class="flex flex-col items-center gap-4 md:flex-row">
+                {#if !user}
+                    <Button
+                        href="/login"
+                        class="flex mx-4 md:px-4"
+                        variant="secondary"
+                        on:click={closeMenu}
+                        >Connexion</Button
+                    >
+                    <Button href="/register" class="flex mx-4 md:px-4" on:click={closeMenu}>Inscription</Button>
+                {:else}
+                    {#if instructor}
                         <Button
-                            href="/login"
-                            class="flex flex-wrap mx-4 md:px-4"
-                            variant="secondary">Connexion</Button
-                        >
-                        <Button href="/register" class="flex mx-4 md:px-4"
-                            >Inscription</Button
-                        >
-                    {:else}
-                        {#if instructor}
-                            <Button
-                                href="/instructor"
-                                class="flex mx-4 md:px-4"
-                                variant="tertiary">Intervenant</Button
-                            >
-                        {/if}
-                        {#if root}
-                            <Button
-                                href="/admin"
-                                class="flex mx-4 md:px-4"
-                                variant="tertiary">Admin</Button
-                            >
-                        {/if}
-                        <Button
-                            href="/logout"
+                            href="/instructor"
                             class="flex mx-4 md:px-4"
-                            data-sveltekit-reload>Déconnexion</Button
+                            variant="tertiary"
+                            on:click={closeMenu}
+                            >Intervenant</Button
                         >
                     {/if}
-                </div>
-            </nav>
+                    {#if root}
+                        <Button
+                            href="/admin"
+                            class="flex mx-4 md:px-4"
+                            variant="tertiary"
+                            on:click={closeMenu}
+                            >Admin</Button
+                        >
+                    {/if}
+                    <Button href="/logout" class="flex mx-4 md:px-4" data-sveltekit-reload on:click={closeMenu}>
+                        Déconnexion
+                    </Button>
+                {/if}
+            </div>
         </header>
 
-        <div class="content-body flex h-full">
+        <div class="h-screen">
             <slot></slot>
         </div>
     </div>
@@ -137,8 +157,65 @@
     }
 
     .content {
-        backdrop-filter: blur(5px);
         background-color: rgba(214, 209, 152, 0.24);
         background-blend-mode: saturation;
+    }
+
+    /* Styles pour le header responsive avec transition */
+    @media (max-width: 768px) {
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: hsl(var(--background));
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+        }
+
+        /* Transition lors de l'ouverture/fermeture */
+        header.max-md.-translate-y-full {
+            transform: translateY(-100%);
+        }
+
+        header.max-md.translate-y-0 {
+            transform: translateY(0);
+        }
+    }
+
+    /* Styles pour l'animation hamburger/croix */
+    .hamburger {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        width: 30px;
+        height: 30px;
+        cursor: pointer;
+        transition: all 0.5s ease;
+        z-index: 60; /* S'assurer que le bouton est au-dessus */
+    }
+
+    .line {
+        height: 4px; /* Augmenter la hauteur pour une meilleure visibilité */
+        width: 100%;
+        background-color: hsl(var(--foreground)); /* Couleur des lignes */
+        transition: all 0.5s ease;
+        transform-origin: center; /* Centre de transformation */
+    }
+
+    .hamburger.open .line:nth-child(1) {
+        transform: translateY(10px) rotate(45deg) scale(1.1); /* Rotation et déplacement vers le bas */
+    }
+
+    .hamburger.open .line:nth-child(2) {
+        opacity: 0; /* Masquer la ligne du milieu */
+        transform: scale(0); /* Réduire la taille à zéro */
+    }
+
+    .hamburger.open .line:nth-child(3) {
+        transform: translateY(-10px) rotate(-45deg) scale(1.1); /* Rotation et déplacement vers le haut */
     }
 </style>

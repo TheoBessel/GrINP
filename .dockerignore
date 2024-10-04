@@ -1,0 +1,13 @@
+**
+!.git
+!.yarn
+!prisma
+!src
+!static
+!.yarnrc.yml
+!entrypoint.sh
+!package.json
+!svelte.config.js
+!tsconfig.json
+!vite.config.ts
+!yarn.lock

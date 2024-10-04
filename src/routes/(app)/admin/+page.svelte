@@ -1,21 +1,18 @@
 <script lang="ts">
-    import {
-        Card,
-        CardContent,
-        CardDescription,
-        CardHeader,
-        CardTitle,
-    } from "$lib/components/ui/card";
-    import { Root } from "@/components/ui/separator";
-    import * as Table from "@/components/ui/table/";
-    import type { PageData } from "../user/edit/$types";
-    import type { User } from "@prisma/client";
-    import { ScrollArea } from "@/components/ui/scroll-area";
-    import { createTable, Render, Subscribe } from "svelte-headless-table";
-    import { readable } from "svelte/store";
-    import { addPagination } from "svelte-headless-table/plugins";
     import { Button } from "$lib/components/ui/button";
+    import {
+      Card,
+      CardContent,
+      CardDescription,
+      CardHeader,
+      CardTitle,
+    } from "$lib/components/ui/card";
     import CardFooter from "@/components/ui/card/card-footer.svelte";
+    import * as Table from "@/components/ui/table/";
+    import type { User } from "@prisma/client";
+    import { createTable, Render, Subscribe } from "svelte-headless-table";
+    import { addPagination } from "svelte-headless-table/plugins";
+    import { readable } from "svelte/store";
 
     export let data: {
         users: User[];

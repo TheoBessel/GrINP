@@ -2,50 +2,59 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider          = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider          = "sqlite"
+  url               = env("DATABASE_URL")
 }
 
 model User {
-  id          String  @id @unique @default(cuid())
-  churros_uid String? @unique
+  id                String      @id @unique @default(cuid())
+  churros_uid       String?     @unique
 
-  first_name String
-  last_name  String
-  email      String  @unique
-  password   String?
-  root       Boolean @default(false)
-  instructor Boolean @default(false)
+  first_name        String
+  last_name         String
+  email             String      @unique
+  password          String?
+  
+  root              Boolean     @default(false)
+  instructor        Boolean     @default(false)
 
-  owned_slots Slot[] @relation("Slot owner")
-  slots       Slot[] @relation("Slot participants")
+  owned_slots       Slot[]      @relation("Slot owner")
+  attended_slots    Slot[]      @relation("Slot attendees")
+  slots             Slot[]      @relation("Slot participants")
 
-  sessions Session[]
+  sessions          Session[]
+
+  @@index([id])
 }
 
 model Session {
-  id        String   @id @unique @default(cuid())
-  userId    String
-  expiresAt DateTime
+  id                String      @id @unique @default(cuid())
+  userId            String
+  expiresAt         DateTime
 
-  user User @relation(references: [id], fields: [userId], onDelete: Cascade)
+  user              User        @relation(references: [id], fields: [userId], onDelete: Cascade)
 
   @@index([id])
 }
 
 model Slot {
-  id          String  @id @unique @default(cuid())
-  name        String?
-  description String?
+  id                String      @id @unique @default(cuid())
+  name              String?
+  description       String?
 
-  starts_at DateTime
-  ends_at   DateTime
+  starts_at         DateTime
+  ends_at           DateTime
 
-  owner_id     String
-  owner        User   @relation("Slot owner", fields: [owner_id], references: [id])
-  participants User[] @relation("Slot participants")
+  capacity          Int         @default(18)
+
+  owner_id          String
+  owner             User        @relation("Slot owner", fields: [owner_id], references: [id])
+  attendees         User[]      @relation("Slot attendees")
+  participants      User[]      @relation("Slot participants")
+
+  @@index([id])
 }

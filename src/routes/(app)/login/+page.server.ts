@@ -1,15 +1,14 @@
 import { dev } from "$app/environment";
 import { loginScheme } from "$lib";
-import { lucia } from "@/server/lucia.js";
-import { churros, generateState, identity, login } from "@/server/oauth.js";
+import { authentik, lucia } from "@/server/lucia.js";
 import prisma from "@/server/prisma.js";
 import { error, fail, type Actions, type ServerLoadEvent } from "@sveltejs/kit";
+import { OAuth2RequestError, generateCodeVerifier, generateState } from "arctic";
 import * as argon2 from "argon2";
+import { redirect, setFlash } from "sveltekit-flash-message/server";
 import { superValidate } from "sveltekit-superforms";
 import { zod } from "sveltekit-superforms/adapters";
 import type { PageServerLoad } from "./$types.js";
-import { redirect, setFlash } from "sveltekit-flash-message/server";
-import { Authentik } from "arctic";
 
 const maxCookiesAge = 60 * 60 * 24 * 15;
 
@@ -18,34 +17,96 @@ export const load: PageServerLoad = async (event: ServerLoadEvent) => {
     throw redirect(302, "/");
   }
 
-  const code = event.url.searchParams.get("code");
-  const state = event.url.searchParams.get("state");
   const oauthState = event.cookies.get("oauthState") ?? null;
+  const oauthCodeVerifier = event.cookies.get("oauthCodeVerifier") ?? null;
 
-  if (!code || !state || !oauthState || state !== oauthState) {
-    if (state !== oauthState) {
-      // Error 400: OAuth state mismatch
-      //throw error(400, "OAuth state mismatch");
-    }
+	const state = event.url.searchParams.get("state");
+	const code = event.url.searchParams.get("code");
+
+  if (!code || !state || !oauthState || !oauthCodeVerifier) {
+    // Do nothing
+  } else if (state !== oauthState) {
+    // Error 400: OAuth state mismatch
+    throw error(400, "OAuth state mismatch");
   } else {
     try {
-      let token = event.cookies.get("oauthToken") ?? null;
-      if (!token) {
-        token = await login(code, state);
-        event.cookies.set("oauthToken", token, {
-          path: "/",
-          secure: !dev,
-          httpOnly: true,
-          maxAge: maxCookiesAge,
-          sameSite: "lax",
-        });
+      const tokens = await authentik.validateAuthorizationCode(code, oauthCodeVerifier);
+      const response = await fetch("https://auth.inpt.fr/application/o/userinfo/", {
+        method: 'post',
+        headers: {
+          Authorization: `Bearer ${tokens.accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      console.log(response);
+      const user: AuthentikUserResult = await response.json();
+
+      let prismaUser = await prisma.user.findUnique({
+        where: {
+          churros_uid: user.preferred_username
+        }
+      });
+
+      const existsClassicUser = await prisma.user.findUnique({
+        where: {
+          email: user.email
+        }
+      })
+      .then((u) => u ? true : false)
+      .catch(() => false);
+
+      if (!prismaUser) {
+        if (existsClassicUser) {
+          prismaUser = await prisma.user.update({
+            where: {
+              email: user.email
+            },
+            data: {
+              churros_uid: user.preferred_username
+            }
+          });
+        } else {
+          prismaUser = await prisma.user.create({
+            data: {
+              churros_uid: user.preferred_username,
+              first_name: user.firstName,
+              last_name: user.lastName,
+              email: user.email,
+            }
+          });
+        }
       }
-      const user = await identity(token);
+
+      const session = await lucia.createSession(prismaUser.id, {
+        userId: prismaUser.id,
+        expiresAt: new Date(Date.now() + 1000 * maxCookiesAge), // 15 days
+      });
+      const sessionCookie = lucia.createSessionCookie(session.id);
+
+      event.cookies.set(sessionCookie.name, sessionCookie.value, {
+        path: ".",
+        ...sessionCookie.attributes,
+      });
+      
     } catch (e) {
-      if (e instanceof Error) {
+      if (e instanceof OAuth2RequestError) {
+        throw error(400, e.message);
+      }
+      else if (e instanceof Error) {
         throw error(500, e.message);
       }
     }
+
+    throw redirect(
+      302,
+      "/",
+      {
+        type: "success",
+        message: "Vous êtes connecté !",
+      },
+      event,
+    );
   }
 
   return {
@@ -94,7 +155,7 @@ export const actions: Actions = {
             }
 
             try {
-              const session = await lucia.createSession(user.email, {
+              const session = await lucia.createSession(user.id, {
                 userId: user.id,
                 expiresAt: new Date(Date.now() + 1000 * maxCookiesAge), // 15 days
               });
@@ -135,15 +196,36 @@ export const actions: Actions = {
   },
 
   oauth: async (event) => {
-    const state = await generateState();
-    churros.state = state;
-    event.cookies.set("oauthState", state, {
+    const state = generateState();
+    const codeVerifier = generateCodeVerifier();
+
+    const url = await authentik.createAuthorizationURL(state, codeVerifier, {
+        scopes: ['openid', 'profile', 'email', 'churros:profile']
+    });
+
+    event.cookies.set('oauthState', state, {
       path: "/",
       secure: !dev,
       httpOnly: true,
       maxAge: maxCookiesAge,
       sameSite: "lax",
     });
-    throw redirect(302, churros.authorizationURL);
+
+    event.cookies.set('oauthCodeVerifier', codeVerifier, {
+      path: "/",
+      secure: !dev,
+      httpOnly: true,
+      maxAge: maxCookiesAge,
+      sameSite: "lax",
+    });
+
+    throw redirect(302, url);
   },
 };
+
+interface AuthentikUserResult {
+  preferred_username: string;
+	firstName: string;
+  lastName: string;
+  email: string;
+}

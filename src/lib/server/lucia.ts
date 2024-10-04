@@ -1,9 +1,20 @@
 // src/lib/server/lucia.ts
 
 import { dev } from '$app/environment';
+import { env } from "$env/dynamic/private";
 import prisma from "$lib/server/prisma";
 import { PrismaAdapter } from "@lucia-auth/adapter-prisma";
+import { Authentik } from "arctic";
 import { Lucia } from "lucia";
+
+const realmURL = 'https://auth.inpt.fr';
+
+export const authentik = new Authentik(
+    realmURL,
+    env.CHURROS_CLIENT_ID,
+    env.CHURROS_CLIENT_SECRET,
+    env.REDIRECT_URI,
+);
 
 const adapter = new PrismaAdapter(prisma.session, prisma.user);
 

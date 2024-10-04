@@ -24,19 +24,41 @@ export const actions: Actions = {
         } else {
             // Add the user to the database
             try {
-                const hash = await argon2.hash(form.data.password);
-                const user = await prisma.user.create({
-                    data: {
-                        //id: "0",
-                        first_name: form.data.first_name,
-                        last_name: form.data.last_name,
-                        email: form.data.email,
-                        password: hash,
+                const existsClassicUser = await prisma.user.findUnique({
+                    where: {
+                        email: form.data.email
                     }
-                });
+                })
+                .then((u) => u ? true : false)
+                .catch(() => false);
+
+                let user;
+
+                const hash = await argon2.hash(form.data.password);
+
+                if (existsClassicUser) {
+                    user = await prisma.user.update({
+                        where: {
+                            email: form.data.email
+                        },
+                        data: {
+                            password: hash
+                        }
+                    });
+                } else {
+                    user = await prisma.user.create({
+                        data: {
+                            //id: "0",
+                            first_name: form.data.first_name,
+                            last_name: form.data.last_name,
+                            email: form.data.email,
+                            password: hash,
+                        }
+                    });
+                }
 
                 try {
-                    const session = await lucia.createSession(user.email, {
+                    const session = await lucia.createSession(user.id, {
                         userId: user.id,
                         expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 15) // 15 days
                     });

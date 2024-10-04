@@ -1,9 +1,9 @@
 <script lang="ts">
     import {
-        Card,
-        CardContent,
-        CardHeader,
-        CardTitle,
+      Card,
+      CardContent,
+      CardHeader,
+      CardTitle,
     } from "$lib/components/ui/card";
     import * as Form from "$lib/components/ui/form";
     import { Input } from "$lib/components/ui/input";
@@ -22,7 +22,7 @@
     const { form: formData, enhance } = form;
 </script>
 
-<Card class="m-auto w-1/2">
+<Card class="m-auto w-full h-full">
     <CardHeader>
         <CardTitle>Inscription</CardTitle>
         <CardDescription
@@ -79,7 +79,7 @@
                 <Form.FieldErrors />
             </Form.Field>
 
-            <div class="flex gap-4">
+            <div class="flex max-md:flex-col gap-4">
                 <Form.Field {form} name="password" class="w-full">
                     <Form.Control let:attrs>
                         <Form.Label>Mot de passe</Form.Label>

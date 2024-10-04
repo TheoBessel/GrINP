@@ -1,10 +1,10 @@
 <script lang="ts">
     import { loginScheme } from "$lib";
     import {
-        Card,
-        CardContent,
-        CardHeader,
-        CardTitle,
+      Card,
+      CardContent,
+      CardHeader,
+      CardTitle,
     } from "$lib/components/ui/card";
     import * as Form from "$lib/components/ui/form";
     import { Input } from "$lib/components/ui/input";
@@ -25,9 +25,9 @@
     const { form: formData, enhance } = form;
 
     import { page } from "$app/stores";
-    import { getFlash } from "sveltekit-flash-message";
-    import CardFooter from "@/components/ui/card/card-footer.svelte";
     import Button from "@/components/ui/button/button.svelte";
+    import CardFooter from "@/components/ui/card/card-footer.svelte";
+    import { getFlash } from "sveltekit-flash-message";
 
     const flash = getFlash(page, {
         clearOnNavigate: true,
@@ -36,7 +36,7 @@
     });
 </script>
 
-<Card class="m-auto w-1/2">
+<Card class="m-auto w-full h-full">
     <CardHeader>
         <CardTitle>Connexion</CardTitle>
         <CardDescription
@@ -50,7 +50,7 @@
         </div>
     </div>
 
-    <CardContent class="flex gap-4 pt-6">
+    <CardContent class="flex max-md:flex-col gap-4 pt-6">
         <form method="POST" action="?/manual" use:enhance class="w-full">
             <Form.Field {form} name="email">
                 <Form.Control let:attrs>
@@ -80,19 +80,19 @@
             <Form.Button class="w-full">Se connecter</Form.Button>
         </form>
 
-        <div class="relative flex">
+        <div class="relative flex flex">
             <div class="absolute inset-2 flex flex-col items-center">
-                <span class="h-full border-l" />
+                <span class="md:h-full md:border-l max-md:w-full max-md:border-t" />
             </div>
             <div class="relative flex flex-col m-auto text-xs uppercase">
-                <span class="bg-card py-2 text-muted-foreground"> Ou </span>
+                <span class="bg-card md:py-2 max-md:px-2 text-muted-foreground"> Ou </span>
             </div>
         </div>
 
         <form
             method="POST"
             action="?/oauth"
-            class="w-full flex flex-col justify-between"
+            class="w-full flex flex-col max-md:gap-4 justify-between"
         >
             <Avatar class="m-auto border-2">
                 <AvatarImage

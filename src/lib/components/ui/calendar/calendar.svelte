@@ -3,13 +3,13 @@
     import * as Select from "$lib/components/ui/select/index.js";
     import { cn } from "$lib/utils.js";
     import {
-        DateFormatter,
-        getLocalTimeZone,
-        today,
+      DateFormatter,
+      getLocalTimeZone,
+      today,
     } from "@internationalized/date";
     import { Calendar as CalendarPrimitive } from "bits-ui";
-    import { string } from "zod";
 
+    
     type $$Props = CalendarPrimitive.Props;
     type $$Events = CalendarPrimitive.Events;
 
@@ -74,7 +74,7 @@
     bind:value
     bind:placeholder
 >
-    <Calendar.Header>
+    <Calendar.Header class="flex flex-col items-center">
         <Calendar.Heading
             class="flex w-full items-center justify-between gap-2"
         >
@@ -120,11 +120,11 @@
             </Select.Root>
         </Calendar.Heading>
     </Calendar.Header>
-    <Calendar.Months>
+    <Calendar.Months class="mx-auto text-center items-center">
         {#each months as month}
             <Calendar.Grid>
                 <Calendar.GridHead>
-                    <Calendar.GridRow class="flex">
+                    <Calendar.GridRow class="flex justify-center">
                         {#each weekdays as weekday}
                             <Calendar.HeadCell>
                                 {weekday.slice(0, 2)}
@@ -134,15 +134,9 @@
                 </Calendar.GridHead>
                 <Calendar.GridBody>
                     {#each month.weeks as weekDates}
-                        <Calendar.GridRow class="mt-2 w-full">
+                        <Calendar.GridRow class="mt-2 w-full justify-center">
                             {#each weekDates as date}
                                 <Calendar.Cell {date}>
-                                    <!-- If the date is in the events array, add the border -->
-                                    <!--{#if che(date)}
-						<Calendar.Day {date} month={month.value} class="border-b-2 border-sky-500"/>
-					{:else}
-						<Calendar.Day {date} month={month.value} />
-					{/if}-->
                                     <Calendar.Day {date} month={month.value} />
                                 </Calendar.Cell>
                             {/each}

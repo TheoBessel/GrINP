@@ -76,32 +76,35 @@ export const load: PageServerLoad = async (event) => {
     });
 
     // Trouve les participants du créneau
-    const participants = await prisma.user.findMany({
-      where: {
-        slots: {
-          some: {
-            id: slot.id,
+
+    const participants_list =
+      await prisma.user.findMany({
+        where: {
+          slots: {
+            some: {
+              id: slot.id,
+            },
           },
         },
-      },
-    });
+      }
+    ) ?? [];
 
     // Retourne les données nécessaires à la page, y compris l'utilisateur actuel
     return {
       slot: slot,
       owner: owner,
-      participants: participants,
       user: event.locals.user,
       form: await superValidate(zod(slotScheme)),
+      participants_list: participants_list,
     };
   } catch (error: any) {
     if (error.code === "P2025") {
       return {
         slot: slot,
         owner: owner,
-        participants: [],
         user: event.locals.user,
         form: await superValidate(zod(slotScheme)),
+        participants_list: [],
       };
     } else {
       goto(event.url);

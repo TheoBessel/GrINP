@@ -2,7 +2,7 @@ import prisma from "@/server/prisma";
 import type { RequestHandler } from "./$types";
 
 export const POST: RequestHandler = async (event) => {
-    const { form } = await event.request.json();
+    const { form, today } = await event.request.json();
 
     const user = event.locals.user;
 
@@ -17,13 +17,18 @@ export const POST: RequestHandler = async (event) => {
 
         // Create the slot
         try {
+            const starts_date = new Date(today + ":" + form.date.starts_at);
+            const ends_date = new Date(today + ":" + form.date.ends_at);
+
             const slot = await prisma.slot.create({
                 data: {
                     name: form.title,
                     description: form.description,
             
-                    starts_at: new Date(form.date.starts_at),
-                    ends_at: new Date(form.date.ends_at),
+                    starts_at: starts_date,
+                    ends_at: ends_date,
+
+                    capacity: form.capacity,
             
                     owner: {
                         connect: {
@@ -36,7 +41,7 @@ export const POST: RequestHandler = async (event) => {
             });
 
             return new Response(
-                JSON.stringify({}),
+                JSON.stringify({ slot: slot}),
                 {
                     status: 200,
                 },

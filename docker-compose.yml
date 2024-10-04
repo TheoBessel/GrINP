@@ -1,0 +1,12 @@
+services:
+  sqlite:
+    image: sqlite
+    environment:
+      DATABASE_URL: file:./dev.db
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./dev.db:/app/dev.db:rw
+
+volumes:
+  sqlite:

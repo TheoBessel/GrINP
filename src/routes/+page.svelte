@@ -14,7 +14,7 @@
     $: user = data.user;
 </script>
 
-<Card class="m-auto w-1/2">
+<Card class="m-auto w-full h-full">
     <CardHeader>
         <CardTitle class="pb-4">
             <h1 class="text-3xl font-bold">Bienvenue !</h1>

@@ -2,13 +2,37 @@ import prisma from "@/server/prisma";
 import type { RequestHandler } from "./$types";
 
 export const POST: RequestHandler = async (event) => {
-  const { slot_id, participants_count } = await event.request.json();
+  const { user_id, slot_id } = await event.request.json();
 
   const user = event.locals.user;
 
-  if (user) {
-    const user_id = user.id;
-    // Add the user to the database
+  const can_manage = await prisma.user.findUnique({
+    where: {
+      id: user?.id
+    }
+  }).then((u) => u?.root
+    || (
+      u?.instructor &&
+        (prisma.slot.findUnique({
+          where: {
+            id: slot_id
+          }
+        }).then((s) => s?.owner_id === user?.id))
+    )
+  );
+
+  const participants_count = await prisma.user.findMany({
+    where: {
+      slots: {
+        some: {
+          id: slot_id,
+        },
+      },
+    },
+  }).then((participants) => participants.length);
+
+  if (user?.id == user_id || can_manage) {
+    // Remove the user from the database
     try {
       await prisma.slot.update({
         where: {
@@ -33,16 +57,12 @@ export const POST: RequestHandler = async (event) => {
         },
       });
 
-      let participants_count_new = -1;
-
-      if (participants) {
-        participants_count_new = participants.length;
-      }
+      let participants_count_new = participants?.length ?? Infinity;
 
       return new Response(
         JSON.stringify({
           updated: participants_count_new < participants_count,
-          participants_count: participants_count_new,
+          participants: participants,
         }),
         {
           status: 200,
@@ -56,7 +76,7 @@ export const POST: RequestHandler = async (event) => {
       });
     }
   } else {
-    return new Response(JSON.stringify("User not logged in !"), {
+    return new Response(JSON.stringify("User not logged in or insufficient permissions !"), {
       status: 400,
     });
   }

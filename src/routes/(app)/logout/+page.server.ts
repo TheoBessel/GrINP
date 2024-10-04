@@ -12,6 +12,9 @@ export const load : PageServerLoad = async (event : ServerLoadEvent) => {
             ...sessionCookie.attributes
         });
     }
+
+    event.cookies.delete('oauthState', { path: '.' });
+    event.cookies.delete('oauthCodeVerifier', { path: '.' });
     
     redirect(302, "/");
 };
